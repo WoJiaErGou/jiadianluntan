@@ -103,6 +103,7 @@ class Jdltspider(scrapy.Spider):
                     answer_first=None
                     content_first=None
                     ask=self.clean_data(ask)
+                    ask=self.clean_donwload(ask)
                     item['href']=href
                     item['title']=title
                     item['ask'] = ask
@@ -164,6 +165,8 @@ class Jdltspider(scrapy.Spider):
                             print("try 错误!")
                         content=self.clean_data(content)
                         answer=self.clean_data(answer)
+                        answer = self.clean_donwload(answer)
+                        content = self.clean_donwload(content)
                         item['title']=None
                         item['ask']  =None
                         item['time_now']=time_post
@@ -233,6 +236,8 @@ class Jdltspider(scrapy.Spider):
                                     print("try 错误!")
                             answer=self.clean_data(answer)
                             content=self.clean_data(content)
+                            answer = self.clean_donwload(answer)
+                            content = self.clean_donwload(content)
                             item['title'] = None
                             item['ask'] =None
                             item['time_now'] = time_post
@@ -249,7 +254,7 @@ class Jdltspider(scrapy.Spider):
                 pass
 
     def clean_data(self,cleandata):
-        list=['董明珠','董大姐','董阿姨','董总','董小姐','董dj','董DJ','董*','董XX','董大妈','董贼','董事长']
+        list=['董明珠','董大姐','董阿姨','董总','董小姐','董dj','董DJ','董*','董XX','董大妈','董贼','董事长','大妈']
         for each in list:
             if type(cleandata)==str:
                 cleandata = re.sub(each,'', cleandata)
@@ -257,4 +262,29 @@ class Jdltspider(scrapy.Spider):
                 for i in range(len(cleandata)):
                     cleandata[i]=re.sub(each,'',cleandata[i])
         return cleandata
-
+    def clean_donwload(self,question):
+        if question == None:
+            return question
+        first_pel = re.compile('\d+\.jpg')
+        second_pel = re.compile('.+KB.+下载次数.+')
+        third_pel = re.compile('下载附件')
+        forth_pel = re.compile('.+上传')
+        dellist = []  # 消除词索引下标记录列表
+        for i in range(len(question)):
+            if re.findall(first_pel, question[i]):
+                print(i)
+                dellist.append(i)
+            if re.findall(second_pel, question[i]):
+                print(i)
+                dellist.append(i)
+            if re.findall(third_pel, question[i]):
+                print(i)
+                dellist.append(i)
+            if re.findall(forth_pel, question[i]):
+                print(i)
+                dellist.append(i)
+        for each in dellist:
+            question[each] = 'to_del'
+        while 'to_del' in question:
+            question.remove('to_del')
+        return question
